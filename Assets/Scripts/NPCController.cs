@@ -62,8 +62,7 @@ public class NPCController : MonoBehaviour, IInteractable
     // ── ExitRoom (вызывается GameManager в финале) ────────────
     public void ExitRoom()
     {
-        if (doorExitPoint == null) { gameObject.SetActive(false); return; }
-        StartCoroutine(ExitRoutine());
+        gameObject.SetActive(false);
     }
 
     // ── collision: thrown screwdriver hits NPC ────────────────
@@ -99,22 +98,7 @@ public class NPCController : MonoBehaviour, IInteractable
         GameManager.Instance?.OnNPCRepair2Done();
     }
 
-    IEnumerator ExitRoutine()
-    {
-        yield return new WaitForSeconds(3f);
-        PlayAnim(triggerExitRoom);
-
-        while (Vector3.Distance(transform.position, doorExitPoint.position) > 0.25f)
-        {
-            var target = new Vector3(doorExitPoint.position.x, transform.position.y, doorExitPoint.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, target, walkSpeed * Time.deltaTime);
-            transform.LookAt(target);
-            yield return null;
-        }
-        gameObject.SetActive(false);
-    }
-
-    void PlayAnim(string triggerName)
+void PlayAnim(string triggerName)
     {
         if (_anim != null && !string.IsNullOrEmpty(triggerName))
             _anim.SetTrigger(triggerName);
