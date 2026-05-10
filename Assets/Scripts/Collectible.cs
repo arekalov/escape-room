@@ -6,7 +6,7 @@ public class Collectible : MonoBehaviour, IInteractable
 
     public void Interact(ItemData usedItem)
     {
-        if (InventoryManager.Instance.AddItem(itemData))
+        if (InventoryManager.Instance.AddItem(itemData, gameObject))
             gameObject.SetActive(false);
     }
 
