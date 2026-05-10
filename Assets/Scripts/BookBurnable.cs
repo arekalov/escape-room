@@ -40,14 +40,18 @@ public class BookBurnable : MonoBehaviour, IInteractable
         if (_burned) return "";
         return (usedItem != null && usedItem == lighterItem)
             ? "[F] Поджечь зажигалкой"
-            : "[E] Осмотреть книгу";
+            : "";
     }
 
     IEnumerator BurnRoutine()
     {
         yield return new WaitForSeconds(burnDuration);
 
-        if (keyObject != null) keyObject.SetActive(true);
+        if (keyObject != null)
+        {
+            keyObject.transform.position = transform.position;
+            keyObject.SetActive(true);
+        }
         gameObject.SetActive(false);
     }
 }

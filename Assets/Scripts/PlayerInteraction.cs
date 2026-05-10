@@ -42,15 +42,18 @@ public class PlayerInteraction : MonoBehaviour
 
     void Scan()
     {
-        var origin = cam ? cam : Camera.main.transform;
-        var hits   = Physics.SphereCastAll(origin.position, 0.1f, origin.forward, interactRange, _mask);
+        var mgr      = InventoryManager.Instance;
+        var selected = mgr?.GetSelected();
+        var origin   = cam ? cam : Camera.main.transform;
+        var hits     = Physics.SphereCastAll(origin.position, 0.1f, origin.forward, interactRange, _mask);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         _target = null;
         foreach (var hit in hits)
         {
             var interactable = hit.collider.GetComponentInParent<IInteractable>();
-            if (interactable != null) { _target = interactable; break; }
+            if (interactable != null && interactable.GetHintText(selected) != "")
+            { _target = interactable; break; }
         }
     }
 
@@ -82,11 +85,12 @@ public class PlayerInteraction : MonoBehaviour
         var mgr      = InventoryManager.Instance;
         var selected = mgr?.GetSelected();
 
-        // Main hint — E action
+        // Main hint — E action (only when hint text is non-empty)
         if (_target != null)
         {
-            if (hintText) hintText.text = _target.GetHintText(null);
-            FadeTo(hintGroup, 1f);
+            var eHint = _target.GetHintText(null);
+            if (hintText) hintText.text = eHint;
+            FadeTo(hintGroup, string.IsNullOrEmpty(eHint) ? 0f : 1f);
         }
         else
         {

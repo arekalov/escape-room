@@ -60,9 +60,19 @@ public class NPCController : MonoBehaviour, IInteractable
     {
         if (State == NPCState.IdleAtTV && usedItem != null && usedItem == screwdriverItem)
             return "[F] Отдать отвёртку";
-        if (State == NPCState.IdleAtTV)
-            return "Мастер ждёт инструмент";
-        return "";
+        if (State == NPCState.Done) return "";
+        return "Не мешай, я работаю";
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (State != NPCState.IdleAtTV) return;
+        var sd = collision.collider.GetComponentInParent<ScrewdriverCollectible>();
+        if (sd == null) return;
+
+        PlayAnim(triggerReceive);
+        collision.collider.gameObject.SetActive(false);
+        GameManager.Instance?.OnScrewdriverGiven();
     }
 
     // ── ExitRoom (вызывается GameManager в финале) ────────────
@@ -75,11 +85,6 @@ public class NPCController : MonoBehaviour, IInteractable
     // ── coroutines ────────────────────────────────────────────
     IEnumerator ApproachRoutine()
     {
-        State = NPCState.WalkingToTV;
-        PlayAnim(triggerWalk);
-
-        yield return WalkTo(tvWorkPoint);
-
         State = NPCState.Repairing1;
         PlayAnim(triggerFix);
         yield return new WaitForSeconds(repair1Duration);

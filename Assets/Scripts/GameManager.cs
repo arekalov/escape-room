@@ -36,23 +36,16 @@ public class GameManager : MonoBehaviour
     // --- вызывается WakeUpCutscene по окончании ---
     public void OnCutsceneDone()
     {
-        SetStage(QuestStage.FreeRoam);
-        radio?.PlayLine(RadioLine.Intro);
-    }
-
-    // --- игрок включил TV ---
-    public void OnTVActivated()
-    {
-        if (Stage != QuestStage.FreeRoam) return;
         SetStage(QuestStage.NPCRepairing1);
         npcController?.StartApproachAndFix1();
-        radio?.PlayLine(RadioLine.FindDoor);
+        radio?.PlayLine(RadioLine.Intro);
     }
 
     // --- NPC закончил первую починку ---
     public void OnNPCRepair1Done()
     {
         SetStage(QuestStage.CollectItems);
+        radio?.PlayLine(RadioLine.FindDoor);
     }
 
     // --- игрок поднял отвёртку (вызывает Collectible через событие InventoryManager) ---

@@ -41,7 +41,7 @@ public class BottleBreakable : MonoBehaviour, IInteractable
         if (_broken) return "";
         return (usedItem != null && usedItem == mugItem)
             ? "[F] Разбить кружкой"
-            : "[E] Осмотреть бутылку";
+            : "";
     }
 
     IEnumerator HideAfterDelay()

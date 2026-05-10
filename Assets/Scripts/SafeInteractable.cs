@@ -32,6 +32,6 @@ public class SafeInteractable : MonoBehaviour, IInteractable
         if (_opened) return "";
         return (usedItem != null && usedItem == keyItem)
             ? "[F] Открыть ключом"
-            : "[E] Сейф заперт";
+            : "Сейф заперт";
     }
 }

@@ -18,14 +18,14 @@ public class TVController : MonoBehaviour, IInteractable
     public float  codePulseAmplitude = 0.055f;
     public float  codePulseSpeed     = 2f;
 
-    public enum TVState { Off, Noise, Code, TurnedOff }
-    public TVState State { get; private set; } = TVState.Off;
+    public enum TVState { Off, Noise, Fixed, Code, TurnedOff }
+    public TVState State { get; private set; } = TVState.Noise;
 
-    MeshRenderer  _renderer;
-    GameObject    _screenCanvas;
-    CanvasGroup   _canvasGroup;
+    MeshRenderer    _renderer;
+    GameObject      _screenCanvas;
+    CanvasGroup     _canvasGroup;
     TextMeshProUGUI _codeText;
-    Coroutine     _textRoutine;
+    Coroutine       _textRoutine;
 
     void Awake()
     {
@@ -33,15 +33,23 @@ public class TVController : MonoBehaviour, IInteractable
         SetupOverlay();
     }
 
-    void Start() => ApplyMaterial(TVState.Off);
+    void Start() => SetState(TVState.Noise);
 
     // ── IInteractable ──────────────────────────────────────────
     public void Interact(ItemData usedItem)
     {
-        if (State == TVState.Off)
+        if (State == TVState.Fixed)
         {
-            SetState(TVState.Noise);
-            GameManager.Instance?.OnTVActivated();
+            SetState(TVState.Code);
+            SetupOverlay();
+            if (_screenCanvas != null)
+            {
+                if (_textRoutine != null) { StopCoroutine(_textRoutine); _textRoutine = null; }
+                _screenCanvas.SetActive(true);
+                if (_canvasGroup) _canvasGroup.alpha = 0f;
+                SyncTextOpaque();
+                _textRoutine = StartCoroutine(RevealAndPulse());
+            }
         }
         else if (State == TVState.Code)
         {
@@ -52,7 +60,7 @@ public class TVController : MonoBehaviour, IInteractable
 
     public string GetHintText(ItemData usedItem)
     {
-        return State == TVState.Off      ? "[E] Включить телевизор"  :
+        return State == TVState.Fixed    ? "[E] Включить телевизор"  :
                State == TVState.Noise    ? "Ремонтируется…"           :
                State == TVState.Code     ? "[E] Выключить телевизор"  :
                                            "";
@@ -62,15 +70,7 @@ public class TVController : MonoBehaviour, IInteractable
     public void ShowCode()
     {
         SetupOverlay();
-        SetState(TVState.Code);
-
-        if (_screenCanvas == null) return;
-        if (_textRoutine != null) { StopCoroutine(_textRoutine); _textRoutine = null; }
-
-        _screenCanvas.SetActive(true);
-        if (_canvasGroup) _canvasGroup.alpha = 0f;
-        SyncTextOpaque();
-        _textRoutine = StartCoroutine(RevealAndPulse());
+        SetState(TVState.Fixed);
     }
 
     // ── helpers ────────────────────────────────────────────────
@@ -91,8 +91,8 @@ public class TVController : MonoBehaviour, IInteractable
         if (_renderer == null) return;
         var mats = _renderer.sharedMaterials;
         if (screenMaterialIndex >= mats.Length) return;
-        mats[screenMaterialIndex] = s == TVState.Code  ? matCode  :
-                                    s == TVState.Noise ? matNoise :
+        mats[screenMaterialIndex] = s == TVState.Code   ? matCode  :
+                                    s == TVState.Noise  ? matNoise :
                                     matOff ?? matNoise;
         _renderer.sharedMaterials = mats;
     }

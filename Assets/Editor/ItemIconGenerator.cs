@@ -1,119 +1,129 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Collections.Generic;
 
 public static class ItemIconGenerator
 {
+    const int ICON_SIZE = 128;
+
+    struct Job
+    {
+        public string modelPath;
+        public string iconName;
+        public string itemPath;
+        public GameObject model;
+    }
+
+    static readonly (string model, string icon, string item)[] _config = {
+        ("Assets/models/bottle/bottle.fbx",        "icon_bottle",       "Assets/Items/Item_Bottle.asset"),
+        ("Assets/models/bokal/bokal.fbx",           "icon_mug",          "Assets/Items/Item_Mug.asset"),
+        ("Assets/models/lighter/Lighter LP.fbx",    "icon_lighter",      "Assets/Items/Item_Lighter.asset"),
+        ("Assets/models/key/key.fbx",               "icon_key",          "Assets/Items/Item_Key.asset"),
+        ("Assets/models/screwdriver/mejsel.fbx",    "icon_screwdriver",  "Assets/Items/Item_Screwdriver.asset"),
+    };
+
+    static List<Job> _pending = new List<Job>();
+    static int       _frames;
+    static bool      _busy;
+
     [MenuItem("Tools/Generate Item Icons")]
     public static void Generate()
     {
+        if (_busy) { Debug.LogWarning("Already running — wait a moment"); return; }
+
         Directory.CreateDirectory(Path.Combine(Application.dataPath, "Items/Icons"));
+        AssetPreview.SetPreviewTextureCacheSize(32);
 
-        GenerateColorIcon("icon_bottle",      new Color(0.10f, 0.65f, 0.05f, 1f), "Assets/Items/Item_Bottle.asset");
-        GenerateColorIcon("icon_mug",         new Color(0.55f, 0.52f, 0.48f, 1f), "Assets/Items/Item_Mug.asset");
-        GenerateTextureIcon("icon_lighter",   "Assets/models/lighter/Lighter LP Col+Alpha.png", "Assets/Items/Item_Lighter.asset");
-        GenerateTextureIcon("icon_key",       "Assets/models/key/metal11_diffuse.jpg",           "Assets/Items/Item_Key.asset");
-        GenerateTextureIcon("icon_screwdriver","Assets/models/screwdriver/mejsel_Screwdriver_BaseColor.png", "Assets/Items/Item_Screwdriver.asset");
-
-        AssetDatabase.Refresh();
-
-        // Import as Sprite
-        string[] icons = { "icon_bottle", "icon_mug", "icon_lighter", "icon_key", "icon_screwdriver" };
-        foreach (var name in icons)
+        _pending.Clear();
+        foreach (var (model, icon, item) in _config)
         {
-            var iconPath = "Assets/Items/Icons/" + name + ".png";
-            var importer = AssetImporter.GetAtPath(iconPath) as TextureImporter;
-            if (importer == null) continue;
-            importer.textureType         = TextureImporterType.Sprite;
-            importer.spriteImportMode    = SpriteImportMode.Single;
-            importer.alphaIsTransparency = false;
-            importer.mipmapEnabled       = false;
-            importer.SaveAndReimport();
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(model);
+            if (go == null) { Debug.LogWarning("Model not found: " + model); continue; }
+            AssetPreview.GetAssetPreview(go); // kick off async render
+            _pending.Add(new Job { modelPath = model, iconName = icon, itemPath = item, model = go });
+        }
+
+        _frames = 0;
+        _busy = true;
+        EditorApplication.update += Poll;
+        Debug.Log("[IconGen] Waiting for previews…");
+    }
+
+    static void Poll()
+    {
+        _frames++;
+
+        bool ready = true;
+        foreach (var j in _pending)
+            if (AssetPreview.IsLoadingAssetPreview(j.model.GetInstanceID())) { ready = false; break; }
+
+        if (!ready && _frames < 400) return; // wait up to ~400 editor frames (~6-7 s)
+
+        EditorApplication.update -= Poll;
+        _busy = false;
+
+        Save();
+    }
+
+    static void Save()
+    {
+        foreach (var j in _pending)
+        {
+            var preview = AssetPreview.GetAssetPreview(j.model);
+            if (preview == null)
+            {
+                Debug.LogWarning("[IconGen] Preview still null for: " + j.modelPath);
+                continue;
+            }
+
+            // Blit to a readable RGBA32 texture at ICON_SIZE
+            var rt   = RenderTexture.GetTemporary(ICON_SIZE, ICON_SIZE, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(preview, rt);
+            RenderTexture.active = rt;
+            var copy = new Texture2D(ICON_SIZE, ICON_SIZE, TextureFormat.RGBA32, false);
+            copy.ReadPixels(new Rect(0, 0, ICON_SIZE, ICON_SIZE), 0, 0);
+            copy.Apply();
+            RenderTexture.active = null;
+            RenderTexture.ReleaseTemporary(rt);
+
+            var iconPath = "Assets/Items/Icons/" + j.iconName + ".png";
+            File.WriteAllBytes(
+                Path.Combine(Application.dataPath, "../" + iconPath),
+                copy.EncodeToPNG()
+            );
+            Object.DestroyImmediate(copy);
+            Debug.Log("[IconGen] Saved: " + iconPath);
         }
 
         AssetDatabase.Refresh();
 
-        // Assign to ItemData
-        string[] itemPaths = {
-            "Assets/Items/Item_Bottle.asset",
-            "Assets/Items/Item_Mug.asset",
-            "Assets/Items/Item_Lighter.asset",
-            "Assets/Items/Item_Key.asset",
-            "Assets/Items/Item_Screwdriver.asset"
-        };
-        string[] iconNames = { "icon_bottle", "icon_mug", "icon_lighter", "icon_key", "icon_screwdriver" };
-
-        for (int i = 0; i < itemPaths.Length; i++)
+        // Set import settings
+        foreach (var j in _pending)
         {
-            var sprite   = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Items/Icons/" + iconNames[i] + ".png");
-            var itemData = AssetDatabase.LoadAssetAtPath<ItemData>(itemPaths[i]);
-            if (sprite != null && itemData != null)
-            {
-                itemData.icon = sprite;
-                EditorUtility.SetDirty(itemData);
-            }
+            var iconPath = "Assets/Items/Icons/" + j.iconName + ".png";
+            var imp = AssetImporter.GetAtPath(iconPath) as TextureImporter;
+            if (imp == null) continue;
+            imp.textureType         = TextureImporterType.Sprite;
+            imp.spriteImportMode    = SpriteImportMode.Single;
+            imp.alphaIsTransparency = true;
+            imp.mipmapEnabled       = false;
+            imp.SaveAndReimport();
+        }
+
+        AssetDatabase.Refresh();
+
+        // Assign sprites to ItemData
+        foreach (var j in _pending)
+        {
+            var sprite   = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Items/Icons/" + j.iconName + ".png");
+            var itemData = AssetDatabase.LoadAssetAtPath<ItemData>(j.itemPath);
+            if (sprite == null || itemData == null) continue;
+            itemData.icon = sprite;
+            EditorUtility.SetDirty(itemData);
         }
 
         AssetDatabase.SaveAssets();
-        Debug.Log("Icons generated.");
-    }
-
-    static void GenerateColorIcon(string iconName, Color baseColor, string itemPath)
-    {
-        const int SIZE = 128;
-        var tex = new Texture2D(SIZE, SIZE, TextureFormat.RGBA32, false);
-        float half = SIZE * 0.5f;
-
-        for (int y = 0; y < SIZE; y++)
-        for (int x = 0; x < SIZE; x++)
-        {
-            float nx = (x - half) / half;
-            float ny = (y - half) / half;
-            float dist     = Mathf.Sqrt(nx * nx + ny * ny);
-            float vignette  = 1f - Mathf.Clamp01(dist * 0.5f);
-            float highlight = Mathf.Clamp01(1f - (nx * 0.3f + ny * 0.3f + 0.25f));
-
-            var c = new Color(
-                Mathf.Clamp01(baseColor.r * (vignette * 0.65f + 0.35f) + highlight * 0.22f),
-                Mathf.Clamp01(baseColor.g * (vignette * 0.65f + 0.35f) + highlight * 0.22f),
-                Mathf.Clamp01(baseColor.b * (vignette * 0.65f + 0.35f) + highlight * 0.22f),
-                1f
-            );
-            tex.SetPixel(x, y, c);
-        }
-
-        tex.Apply();
-        SaveIcon(tex, iconName);
-        Object.DestroyImmediate(tex);
-    }
-
-    static void GenerateTextureIcon(string iconName, string texturePath, string itemPath)
-    {
-        var srcTex = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
-        if (srcTex == null)
-        {
-            Debug.LogWarning("Texture not found: " + texturePath);
-            GenerateColorIcon(iconName, new Color(0.5f, 0.5f, 0.5f), itemPath);
-            return;
-        }
-
-        var rt = RenderTexture.GetTemporary(128, 128, 0, RenderTextureFormat.ARGB32);
-        Graphics.Blit(srcTex, rt);
-        RenderTexture.active = rt;
-        var copy = new Texture2D(128, 128, TextureFormat.RGBA32, false);
-        copy.ReadPixels(new Rect(0, 0, 128, 128), 0, 0);
-        copy.Apply();
-        RenderTexture.active = null;
-        RenderTexture.ReleaseTemporary(rt);
-
-        SaveIcon(copy, iconName);
-        Object.DestroyImmediate(copy);
-    }
-
-    static void SaveIcon(Texture2D tex, string iconName)
-    {
-        var path  = "Assets/Items/Icons/" + iconName + ".png";
-        var bytes = tex.EncodeToPNG();
-        File.WriteAllBytes(Path.Combine(Application.dataPath, "../" + path), bytes);
+        Debug.Log("[IconGen] Done — all icons generated and assigned.");
     }
 }
