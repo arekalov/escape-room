@@ -35,8 +35,8 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        Scan();
         HandleInput();
+        Scan();
         UpdateHints();
     }
 

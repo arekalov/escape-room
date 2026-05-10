@@ -1,18 +1,16 @@
 using System.Collections;
 using UnityEngine;
 
-// Бутылка в углу: при использовании кружкой разбивается, появляется зажигалка
 public class BottleBreakable : MonoBehaviour, IInteractable
 {
     [Header("Required item")]
     public ItemData mugItem;
 
     [Header("What spawns after break")]
-    public GameObject lighterObject; // уже в сцене, но inactive
+    public GameObject lighterObject;
 
     [Header("Optional break effect")]
     public GameObject breakEffectPrefab;
-    public float      hideDelay = 0.15f;
 
     bool _broken;
 
@@ -33,7 +31,7 @@ public class BottleBreakable : MonoBehaviour, IInteractable
             lighterObject.SetActive(true);
         }
 
-        StartCoroutine(HideAfterDelay());
+        StartCoroutine(BreakAnimation());
     }
 
     public string GetHintText(ItemData usedItem)
@@ -44,9 +42,21 @@ public class BottleBreakable : MonoBehaviour, IInteractable
             : "";
     }
 
-    IEnumerator HideAfterDelay()
+    IEnumerator BreakAnimation()
     {
-        yield return new WaitForSeconds(hideDelay);
+        Vector3 origPos = transform.position;
+        Quaternion origRot = transform.localRotation;
+
+        // Rapid shake (impact shudder)
+        for (float t = 0f; t < 0.12f; t += Time.deltaTime)
+        {
+            float shake = Mathf.Sin(t / 0.12f * Mathf.PI * 8f) * 0.025f * (1f - t / 0.12f);
+            transform.position = origPos + new Vector3(shake, 0f, shake * 0.5f);
+            float tilt = Mathf.Sin(t / 0.12f * Mathf.PI * 6f) * 8f * (1f - t / 0.12f);
+            transform.localRotation = origRot * Quaternion.Euler(0f, 0f, tilt);
+            yield return null;
+        }
+
         gameObject.SetActive(false);
     }
 }

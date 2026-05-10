@@ -1,20 +1,16 @@
 using System.Collections;
 using UnityEngine;
 
-// Книга: при использовании зажигалкой сгорает, появляется ключ на/у сейфа
 public class BookBurnable : MonoBehaviour, IInteractable
 {
     [Header("Required item")]
     public ItemData lighterItem;
 
     [Header("Key to reveal after burn")]
-    public GameObject keyObject; // inactive GO — активируем после сгорания
+    public GameObject keyObject;
 
-    [Header("Optional burn effect")]
-    public Animator bookAnimator;         // триггер "Burn"
-    public string   burnTrigger = "Burn";
+    [Header("Burn effect prefab (looping fire — stopped when book is gone)")]
     public GameObject burnParticlePrefab;
-    public float    burnDuration = 2f;    // сколько ждать до скрытия
 
     bool _burned;
 
@@ -26,13 +22,13 @@ public class BookBurnable : MonoBehaviour, IInteractable
         _burned = true;
         InventoryManager.Instance?.RemoveItem(lighterItem);
 
-        if (bookAnimator != null && !string.IsNullOrEmpty(burnTrigger))
-            bookAnimator.SetTrigger(burnTrigger);
+        if (keyObject != null)
+        {
+            keyObject.transform.position = transform.position;
+            keyObject.SetActive(true);
+        }
 
-        if (burnParticlePrefab != null)
-            Instantiate(burnParticlePrefab, transform.position + Vector3.up * 0.1f, Quaternion.identity);
-
-        StartCoroutine(BurnRoutine());
+        StartCoroutine(BurnAnimation());
     }
 
     public string GetHintText(ItemData usedItem)
@@ -43,15 +39,45 @@ public class BookBurnable : MonoBehaviour, IInteractable
             : "";
     }
 
-    IEnumerator BurnRoutine()
+    IEnumerator BurnAnimation()
     {
-        yield return new WaitForSeconds(burnDuration);
+        Vector3 origScale = transform.localScale;
+        Vector3 origPos   = transform.localPosition;
 
-        if (keyObject != null)
+        // Spawn fire — track the instance so we can stop it
+        GameObject fireInstance = null;
+        if (burnParticlePrefab != null)
+            fireInstance = Instantiate(burnParticlePrefab, transform.position + Vector3.up * 0.05f, Quaternion.identity);
+
+        // Brief flare — scale up slightly as it catches fire
+        for (float t = 0f; t < 0.15f; t += Time.deltaTime)
         {
-            keyObject.transform.position = transform.position;
-            keyObject.SetActive(true);
+            float p = t / 0.15f;
+            transform.localScale = origScale * (1f + 0.08f * Mathf.Sin(p * Mathf.PI));
+            yield return null;
         }
+
+        // Burn down — shrink and float upward
+        for (float t = 0f; t < 0.7f; t += Time.deltaTime)
+        {
+            float p    = t / 0.7f;
+            float ease = p * p;
+            transform.localScale    = origScale * (1f - ease);
+            transform.localPosition = origPos + Vector3.up * p * 0.25f;
+            yield return null;
+        }
+
+        // Stop fire emitters so existing particles finish naturally, then destroy
+        if (fireInstance != null)
+        {
+            foreach (var ps in fireInstance.GetComponentsInChildren<ParticleSystem>())
+            {
+                var em = ps.emission;
+                em.enabled = false;
+            }
+            Destroy(fireInstance, 1.5f);
+        }
+
         gameObject.SetActive(false);
     }
 }

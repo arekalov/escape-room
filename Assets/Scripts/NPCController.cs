@@ -4,18 +4,14 @@ using UnityEngine;
 public class NPCController : MonoBehaviour, IInteractable
 {
     [Header("Waypoints")]
-    public Transform tvWorkPoint;    // позиция у TV для починки
-    public Transform doorExitPoint;  // точка выхода
+    public Transform doorExitPoint;
 
     [Header("Movement")]
     public float walkSpeed = 1.4f;
 
-    [Header("Animator triggers/params")]
-    public string triggerWalk     = "Walk";
-    public string triggerIdle     = "Idle";
-    public string triggerFix      = "Fix";
-    public string triggerReceive  = "Receive";
-    public string triggerExit     = "Exit";
+    [Header("Animator trigger names")]
+    public string triggerIdle    = "Idle";
+    public string triggerExitRoom = "ExitRoom";
 
     [Header("Repair durations (seconds)")]
     public float repair1Duration = 4f;
@@ -24,35 +20,34 @@ public class NPCController : MonoBehaviour, IInteractable
     [Header("Item to accept")]
     public ItemData screwdriverItem;
 
-    public enum NPCState { Waiting, WalkingToTV, Repairing1, IdleAtTV, Repairing2, Done }
-    public NPCState State { get; private set; } = NPCState.Waiting;
+    public enum NPCState { Repairing1, IdleAtTV, Repairing2, Done }
+    public NPCState State { get; private set; } = NPCState.Repairing1;
 
     Animator _anim;
 
     void Awake() => _anim = GetComponent<Animator>();
 
-    // ── вызывается GameManager после включения TV ─────────────
+    // ── вызывается GameManager после старта кат-сцены ────────
     public void StartApproachAndFix1()
     {
-        if (State != NPCState.Waiting) return;
-        StartCoroutine(ApproachRoutine());
+        StartCoroutine(Repair1Routine());
     }
 
-    // ── вызывается GameManager после передачи отвёртки ────────
+    // ── вызывается GameManager после передачи отвёртки ───────
     public void StartFix2()
     {
         if (State != NPCState.IdleAtTV) return;
         StartCoroutine(Repair2Routine());
     }
 
-    // ── IInteractable (получить отвёртку) ─────────────────────
+    // ── IInteractable ─────────────────────────────────────────
     public void Interact(ItemData usedItem)
     {
         if (State != NPCState.IdleAtTV) return;
         if (usedItem == null || usedItem != screwdriverItem) return;
 
-        PlayAnim(triggerReceive);
         InventoryManager.Instance?.RemoveItem(screwdriverItem);
+        PlayAnim(triggerIdle);
         GameManager.Instance?.OnScrewdriverGiven();
     }
 
@@ -64,17 +59,6 @@ public class NPCController : MonoBehaviour, IInteractable
         return "Не мешай, я работаю";
     }
 
-    void OnCollisionEnter(Collision collision)
-    {
-        if (State != NPCState.IdleAtTV) return;
-        var sd = collision.collider.GetComponentInParent<ScrewdriverCollectible>();
-        if (sd == null) return;
-
-        PlayAnim(triggerReceive);
-        collision.collider.gameObject.SetActive(false);
-        GameManager.Instance?.OnScrewdriverGiven();
-    }
-
     // ── ExitRoom (вызывается GameManager в финале) ────────────
     public void ExitRoom()
     {
@@ -82,14 +66,25 @@ public class NPCController : MonoBehaviour, IInteractable
         StartCoroutine(ExitRoutine());
     }
 
+    // ── collision: thrown screwdriver hits NPC ────────────────
+    void OnCollisionEnter(Collision collision)
+    {
+        if (State != NPCState.IdleAtTV) return;
+        var sd = collision.collider.GetComponentInParent<ScrewdriverCollectible>();
+        if (sd == null) return;
+
+        collision.collider.gameObject.SetActive(false);
+        PlayAnim(triggerIdle);
+        GameManager.Instance?.OnScrewdriverGiven();
+    }
+
     // ── coroutines ────────────────────────────────────────────
-    IEnumerator ApproachRoutine()
+    IEnumerator Repair1Routine()
     {
         State = NPCState.Repairing1;
-        PlayAnim(triggerFix);
+        // Animator starts in Working state by default — no trigger needed
         yield return new WaitForSeconds(repair1Duration);
 
-        PlayAnim(triggerIdle);
         State = NPCState.IdleAtTV;
         GameManager.Instance?.OnNPCRepair1Done();
     }
@@ -97,18 +92,17 @@ public class NPCController : MonoBehaviour, IInteractable
     IEnumerator Repair2Routine()
     {
         State = NPCState.Repairing2;
-        PlayAnim(triggerFix);
+        // Keep Idle animation — no anim change
         yield return new WaitForSeconds(repair2Duration);
 
-        PlayAnim(triggerIdle);
         State = NPCState.Done;
         GameManager.Instance?.OnNPCRepair2Done();
     }
 
     IEnumerator ExitRoutine()
     {
-        yield return new WaitForSeconds(1f);
-        PlayAnim(triggerExit);
+        yield return new WaitForSeconds(3f);
+        PlayAnim(triggerExitRoom);
 
         while (Vector3.Distance(transform.position, doorExitPoint.position) > 0.25f)
         {
@@ -118,18 +112,6 @@ public class NPCController : MonoBehaviour, IInteractable
             yield return null;
         }
         gameObject.SetActive(false);
-    }
-
-    IEnumerator WalkTo(Transform dest)
-    {
-        if (dest == null) yield break;
-        while (Vector3.Distance(transform.position, dest.position) > 0.25f)
-        {
-            var target = new Vector3(dest.position.x, transform.position.y, dest.position.z);
-            transform.position = Vector3.MoveTowards(transform.position, target, walkSpeed * Time.deltaTime);
-            transform.LookAt(target);
-            yield return null;
-        }
     }
 
     void PlayAnim(string triggerName)

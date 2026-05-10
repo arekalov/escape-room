@@ -45,7 +45,6 @@ public class GameManager : MonoBehaviour
     public void OnNPCRepair1Done()
     {
         SetStage(QuestStage.CollectItems);
-        radio?.PlayLine(RadioLine.FindDoor);
     }
 
     // --- игрок поднял отвёртку (вызывает Collectible через событие InventoryManager) ---

@@ -24,7 +24,7 @@ public class RadioSubtitles : MonoBehaviour
     public string lineIntro    = "Срочно выбирайся! Скоро приедет НКВД.\nА пока — посмотри телевизор.";
     public string lineFindDoor = "Открой дверь и скорее выбирайся отсюда!";
     public string lineTurnOff  = "Выключи телевизор — и дверь откроется.";
-    public string lineWin      = "Беги!";
+    public string lineWin      = "Ты свободен!";
 
     Coroutine _current;
 

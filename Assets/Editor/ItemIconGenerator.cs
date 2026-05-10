@@ -17,7 +17,7 @@ public static class ItemIconGenerator
 
     static readonly (string model, string icon, string item)[] _config = {
         ("Assets/models/bottle/bottle.fbx",        "icon_bottle",       "Assets/Items/Item_Bottle.asset"),
-        ("Assets/models/bokal/bokal.fbx",           "icon_mug",          "Assets/Items/Item_Mug.asset"),
+        ("Assets/models/glass/LP_SF.fbx",            "icon_mug",          "Assets/Items/Item_Mug.asset"),
         ("Assets/models/lighter/Lighter LP.fbx",    "icon_lighter",      "Assets/Items/Item_Lighter.asset"),
         ("Assets/models/key/key.fbx",               "icon_key",          "Assets/Items/Item_Key.asset"),
         ("Assets/models/screwdriver/mejsel.fbx",    "icon_screwdriver",  "Assets/Items/Item_Screwdriver.asset"),

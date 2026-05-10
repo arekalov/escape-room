@@ -89,12 +89,12 @@ public class TVController : MonoBehaviour, IInteractable
     void ApplyMaterial(TVState s)
     {
         if (_renderer == null) return;
-        var mats = _renderer.sharedMaterials;
+        var mats = _renderer.materials;
         if (screenMaterialIndex >= mats.Length) return;
         mats[screenMaterialIndex] = s == TVState.Code   ? matCode  :
                                     s == TVState.Noise  ? matNoise :
                                     matOff ?? matNoise;
-        _renderer.sharedMaterials = mats;
+        _renderer.materials = mats;
     }
 
     void SetupOverlay()

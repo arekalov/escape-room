@@ -10,19 +10,43 @@ public class VictoryTrigger : MonoBehaviour
     public float       fadeDuration = 2f;
 
     bool _triggered;
+    Collider _col;
+
+    void Awake() => _col = GetComponent<Collider>();
+
+    void Update()
+    {
+        if (_triggered) return;
+        var player = GameObject.FindWithTag("Player");
+        if (player == null) return;
+        var checkPos = player.transform.position + Vector3.up * 0.8f;
+        if (_col != null && _col.bounds.Contains(checkPos))
+            Fire();
+    }
 
     void OnTriggerEnter(Collider other)
     {
         if (_triggered) return;
         if (!other.CompareTag("Player") && other.GetComponentInParent<FirstPersonController>() == null) return;
+        Fire();
+    }
 
+    void OnTriggerStay(Collider other)
+    {
+        if (_triggered) return;
+        if (!other.CompareTag("Player") && other.GetComponentInParent<FirstPersonController>() == null) return;
+        Fire();
+    }
+
+    void Fire()
+    {
+        if (_triggered) return;
         _triggered = true;
         StartCoroutine(ShowVictory());
     }
 
     IEnumerator ShowVictory()
     {
-        // Отключить управление игрока
         var fpc = FindFirstObjectByType<FirstPersonController>();
         if (fpc != null) fpc.enabled = false;
 
@@ -38,7 +62,5 @@ public class VictoryTrigger : MonoBehaviour
         }
 
         yield return new WaitForSeconds(4f);
-
-        // Можно добавить: UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 }
