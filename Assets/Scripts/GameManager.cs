@@ -66,11 +66,10 @@ public class GameManager : MonoBehaviour
     {
         SetStage(QuestStage.TVShowsText);
         tvController?.ShowCode();
-        radio?.PlayLine(RadioLine.TurnOffTV);
     }
 
-    // --- игрок выключил TV ---
-    public void OnTVTurnedOff()
+    // --- игрок ввёл правильный код в замок ---
+    public void OnCodeCorrect()
     {
         if (Stage != QuestStage.TVShowsText) return;
         SetStage(QuestStage.Victory);
@@ -78,6 +77,9 @@ public class GameManager : MonoBehaviour
         npcController?.ExitRoom();
         radio?.PlayLine(RadioLine.Win);
     }
+
+    // --- код отображаемый на TV и принимаемый замком ---
+    public const string SecretCode = "1937";
 
     void SetStage(QuestStage s)
     {

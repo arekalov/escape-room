@@ -62,7 +62,62 @@ public class NPCController : MonoBehaviour, IInteractable
     // ── ExitRoom (вызывается GameManager в финале) ────────────
     public void ExitRoom()
     {
+        if (doorExitPoint == null) { gameObject.SetActive(false); return; }
+        StartCoroutine(ExitRoutine());
+    }
+
+    IEnumerator ExitRoutine()
+    {
+        State = NPCState.Done;
+        PlayAnim(triggerExitRoom);
+
+        while (Vector3.Distance(transform.position, doorExitPoint.position) > 0.3f)
+        {
+            var target = new Vector3(doorExitPoint.position.x, transform.position.y, doorExitPoint.position.z);
+            transform.position = Vector3.MoveTowards(transform.position, target, walkSpeed * Time.deltaTime);
+            transform.LookAt(target);
+            yield return null;
+        }
+
+        yield return StartCoroutine(FadeOut(1.2f));
         gameObject.SetActive(false);
+    }
+
+    IEnumerator FadeOut(float duration)
+    {
+        var renderers = GetComponentsInChildren<Renderer>(true);
+
+        // Создаём инстанс-материалы и переводим в прозрачный режим
+        foreach (var r in renderers)
+        {
+            var mats = r.materials; // уже инстансы
+            foreach (var m in mats)
+            {
+                m.SetFloat("_Surface", 1f);          // Transparent
+                m.SetFloat("_Blend",   0f);          // Alpha
+                m.SetFloat("_ZWrite",  0f);
+                m.SetFloat("_SrcBlend", 5f);         // SrcAlpha
+                m.SetFloat("_DstBlend", 10f);        // OneMinusSrcAlpha
+                m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                m.renderQueue = 3000;
+            }
+            r.materials = mats;
+        }
+
+        for (float t = 0f; t < duration; t += Time.deltaTime)
+        {
+            float alpha = 1f - t / duration;
+            foreach (var r in renderers)
+            {
+                foreach (var m in r.materials)
+                {
+                    var c = m.GetColor("_BaseColor");
+                    c.a = alpha;
+                    m.SetColor("_BaseColor", c);
+                }
+            }
+            yield return null;
+        }
     }
 
     // ── collision: thrown screwdriver hits NPC ────────────────

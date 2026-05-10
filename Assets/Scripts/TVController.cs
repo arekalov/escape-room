@@ -36,41 +36,26 @@ public class TVController : MonoBehaviour, IInteractable
     void Start() => SetState(TVState.Noise);
 
     // ── IInteractable ──────────────────────────────────────────
-    public void Interact(ItemData usedItem)
-    {
-        if (State == TVState.Fixed)
-        {
-            SetState(TVState.Code);
-            SetupOverlay();
-            if (_screenCanvas != null)
-            {
-                if (_textRoutine != null) { StopCoroutine(_textRoutine); _textRoutine = null; }
-                _screenCanvas.SetActive(true);
-                if (_canvasGroup) _canvasGroup.alpha = 0f;
-                SyncTextOpaque();
-                _textRoutine = StartCoroutine(RevealAndPulse());
-            }
-        }
-        else if (State == TVState.Code)
-        {
-            SetState(TVState.TurnedOff);
-            GameManager.Instance?.OnTVTurnedOff();
-        }
-    }
+    public void Interact(ItemData usedItem) { }
 
     public string GetHintText(ItemData usedItem)
     {
-        return State == TVState.Fixed    ? "[E] Включить телевизор"  :
-               State == TVState.Noise    ? "Ремонтируется…"           :
-               State == TVState.Code     ? "[E] Выключить телевизор"  :
-                                           "";
+        return State == TVState.Noise ? "Ремонтируется…" : "";
     }
 
     // ── вызывается GameManager после второй починки ───────────
     public void ShowCode()
     {
         SetupOverlay();
-        SetState(TVState.Fixed);
+        SetState(TVState.Code);
+
+        if (_screenCanvas == null) return;
+        if (_codeText != null) _codeText.text = $"КОД: {GameManager.SecretCode}";
+        if (_textRoutine != null) { StopCoroutine(_textRoutine); _textRoutine = null; }
+        _screenCanvas.SetActive(true);
+        if (_canvasGroup) _canvasGroup.alpha = 0f;
+        SyncTextOpaque();
+        _textRoutine = StartCoroutine(RevealAndPulse());
     }
 
     // ── helpers ────────────────────────────────────────────────
