@@ -1,50 +1,95 @@
 using UnityEngine;
 
+public enum QuestStage
+{
+    Cutscene,          // Кат-сцена пробуждения
+    FreeRoam,          // TV ещё не включён
+    NPCRepairing1,     // TV включён, NPC чинит (первый раз)
+    CollectItems,      // NPC поднялся — можно исследовать комнату
+    GiveScrewdriver,   // Игрок нашёл отвёртку, надо отдать NPC
+    NPCRepairing2,     // NPC чинит второй раз
+    TVShowsText,       // TV показывает надпись
+    Victory            // Дверь открыта
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     [Header("Scene references")]
-    public Animator doorAnimator;
-    public Animator safeAnimator;
-    public TVController tvController;
+    public Animator      doorAnimator;
+    public TVController  tvController;
     public NPCController npcController;
 
-    void Awake()
+    [Header("Radio subtitles")]
+    public RadioSubtitles radio;
+
+    public QuestStage Stage { get; private set; } = QuestStage.Cutscene;
+
+    void Awake() => Instance = this;
+
+    void Start()
     {
-        Instance = this;
+        // Кат-сцена заканчивается сама — WakeUpCutscene вызывает OnCutsceneDone
     }
 
-    // Вызывается TVController когда TV выключают
+    // --- вызывается WakeUpCutscene по окончании ---
+    public void OnCutsceneDone()
+    {
+        SetStage(QuestStage.FreeRoam);
+        radio?.PlayLine(RadioLine.Intro);
+    }
+
+    // --- игрок включил TV ---
+    public void OnTVActivated()
+    {
+        if (Stage != QuestStage.FreeRoam) return;
+        SetStage(QuestStage.NPCRepairing1);
+        npcController?.StartApproachAndFix1();
+        radio?.PlayLine(RadioLine.FindDoor);
+    }
+
+    // --- NPC закончил первую починку ---
+    public void OnNPCRepair1Done()
+    {
+        SetStage(QuestStage.CollectItems);
+    }
+
+    // --- игрок поднял отвёртку (вызывает Collectible через событие InventoryManager) ---
+    public void OnScrewdriverPickedUp()
+    {
+        if (Stage == QuestStage.CollectItems)
+            SetStage(QuestStage.GiveScrewdriver);
+    }
+
+    // --- NPC принял отвёртку ---
+    public void OnScrewdriverGiven()
+    {
+        SetStage(QuestStage.NPCRepairing2);
+        npcController?.StartFix2();
+    }
+
+    // --- NPC закончил вторую починку ---
+    public void OnNPCRepair2Done()
+    {
+        SetStage(QuestStage.TVShowsText);
+        tvController?.ShowCode();
+        radio?.PlayLine(RadioLine.TurnOffTV);
+    }
+
+    // --- игрок выключил TV ---
     public void OnTVTurnedOff()
     {
+        if (Stage != QuestStage.TVShowsText) return;
+        SetStage(QuestStage.Victory);
         doorAnimator?.SetTrigger("Open");
         npcController?.ExitRoom();
+        radio?.PlayLine(RadioLine.Win);
     }
 
-    // Вызывается когда NPC закончил ремонт
-    public void OnNPCFinishedRepair()
+    void SetStage(QuestStage s)
     {
-        tvController?.ShowCode();
+        Stage = s;
+        Debug.Log("[Quest] Stage → " + s);
     }
-
-    // Вызывается когда игрок открывает сейф
-    public void OpenSafe()
-    {
-        safeAnimator?.SetTrigger("Open");
-    }
-
-    // Тест-хелперы (убрать перед финальным билдом)
-    [ContextMenu("TEST: Open Door + NPC Exit")]
-    void TestOpenDoor()
-    {
-        doorAnimator?.SetTrigger("Open");
-        npcController?.ExitRoom();
-    }
-
-    [ContextMenu("TEST: Open Safe")]
-    void TestOpenSafe() => safeAnimator?.SetTrigger("Open");
-
-    [ContextMenu("TEST: TV Show Code")]
-    void TestTVCode() => tvController?.ShowCode();
 }

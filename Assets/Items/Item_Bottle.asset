@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Item_Bottle
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "\u0411\u0443\u0442\u044B\u043B\u043A\u0430"
-  icon: {fileID: 21300000, guid: 2236564321c994b71a58de320c792211, type: 3}
+  icon: {fileID: 21300000, guid: 97d88db72a50a4435ae731a4565b0dd1, type: 3}
   itemType: 0

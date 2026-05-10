@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public float interactRange = 1.5f;
+    public float interactRange = 3.5f;
     public Transform cam;
 
     [Header("Main hint (E / F)")]
@@ -43,7 +43,7 @@ public class PlayerInteraction : MonoBehaviour
     void Scan()
     {
         var origin = cam ? cam : Camera.main.transform;
-        var hits   = Physics.RaycastAll(origin.position, origin.forward, interactRange, _mask);
+        var hits   = Physics.SphereCastAll(origin.position, 0.1f, origin.forward, interactRange, _mask);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
         _target = null;
@@ -72,7 +72,7 @@ public class PlayerInteraction : MonoBehaviour
         {
             var origin   = cam ? cam : Camera.main.transform;
             var dropPos  = origin.position + origin.forward * 0.6f;
-            var throwVel = origin.forward * 3f + Vector3.up * 1f;
+            var throwVel = origin.forward * 1.8f + Vector3.up * 0.4f;
             mgr.DropItem(mgr.SelectedSlot, dropPos, throwVel);
         }
     }

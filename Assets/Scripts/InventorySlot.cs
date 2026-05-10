@@ -27,7 +27,7 @@ public class InventorySlot : MonoBehaviour
         iconImage.enabled = hasItem;
         if (hasItem) iconImage.sprite = item.icon;
         highlight.color = selected
-            ? new Color(1f, 0.85f, 0.2f, 0.9f)
-            : new Color(1f, 1f, 1f, 0.15f);
+            ? new Color(1f, 0.85f, 0.2f, 0.85f)
+            : new Color(1f, 1f, 1f, 0f);
     }
 }

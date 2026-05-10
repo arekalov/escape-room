@@ -63,6 +63,8 @@ public class WakeUpCutscene : MonoBehaviour
         Cursor.visible   = false;
         playerController.enabled = true;
 
+        GameManager.Instance?.OnCutsceneDone();
+
         if (eyeOverlay) Destroy(eyeOverlay.transform.root.gameObject);
         Destroy(gameObject);
     }

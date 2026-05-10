@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class Collectible : MonoBehaviour, IInteractable
+// Замени Collectible на этот скрипт на объекте отвёртки в сейфе
+public class ScrewdriverCollectible : MonoBehaviour, IInteractable
 {
     public ItemData itemData;
 
@@ -11,9 +12,9 @@ public class Collectible : MonoBehaviour, IInteractable
             var rb = GetComponent<Rigidbody>();
             if (rb != null) rb.isKinematic = true;
             gameObject.SetActive(false);
+            GameManager.Instance?.OnScrewdriverPickedUp();
         }
     }
 
-    public string GetHintText(ItemData usedItem) =>
-        $"[E] Взять {itemData?.itemName}";
+    public string GetHintText(ItemData usedItem) => $"[E] Взять {itemData?.itemName}";
 }

@@ -48,9 +48,9 @@ public class InventoryManager : MonoBehaviour
             rb.isKinematic   = false;
             rb.linearVelocity     = throwVelocity;
             rb.angularVelocity = new Vector3(
-                UnityEngine.Random.Range(-8f, 8f),
-                UnityEngine.Random.Range(-8f, 8f),
-                UnityEngine.Random.Range(-8f, 8f));
+                UnityEngine.Random.Range(-4f, 4f),
+                UnityEngine.Random.Range(-4f, 4f),
+                UnityEngine.Random.Range(-4f, 4f));
 
             StartCoroutine(MakeKinematicWhenStopped(rb));
         }
@@ -60,9 +60,13 @@ public class InventoryManager : MonoBehaviour
 
     IEnumerator MakeKinematicWhenStopped(Rigidbody rb)
     {
-        yield return new WaitForSeconds(0.3f);
-        while (rb != null && rb.linearVelocity.sqrMagnitude > 0.01f)
+        yield return new WaitForSeconds(0.5f);
+        float timeout = 4f;
+        while (rb != null && rb.linearVelocity.sqrMagnitude > 0.005f && timeout > 0f)
+        {
+            timeout -= Time.deltaTime;
             yield return null;
+        }
         if (rb != null) rb.isKinematic = true;
     }
 
