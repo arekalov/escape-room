@@ -5,11 +5,11 @@ using UnityEngine.InputSystem;
 public class FirstPersonController : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 4f;
+    public float moveSpeed = 2.5f;
     public float gravity   = -15f;
 
     [Header("Look")]
-    public float sensitivity = 0.12f;
+    public float sensitivity = 0.2f;
     public float maxPitch    = 80f;
 
     [Header("References")]
