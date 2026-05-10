@@ -3,74 +3,40 @@ using System.Collections;
 
 public class NPCController : MonoBehaviour
 {
-    [Header("Waypoints")]
-    public Transform tvPosition;
-    public Transform idlePosition;
+    [Header("Exit target (empty GO near door exit)")]
+    public Transform doorExitPoint;
 
     [Header("Settings")]
     public float walkSpeed = 1.5f;
-    public float repairDuration = 3f;
 
-    private Animator _animator;
-    private bool _busy;
-
-    static readonly int HashWalk   = Animator.StringToHash("Walk");
-    static readonly int HashFix    = Animator.StringToHash("Fix");
-    static readonly int HashIdle   = Animator.StringToHash("Idle");
+    Animator _animator;
+    static readonly int HashExitRoom = Animator.StringToHash("ExitRoom");
 
     void Awake()
     {
         _animator = GetComponent<Animator>();
     }
 
-    // Вызывается GameManager / InteractionSystem когда игрок активировал TV
-    public void StartRepair()
+    public void ExitRoom()
     {
-        if (_busy) return;
-        StartCoroutine(RepairRoutine());
+        StartCoroutine(WalkOutRoutine());
     }
 
-    // Вызывается когда игрок отдал отвёртку
-    public void FinishRepair()
+    IEnumerator WalkOutRoutine()
     {
-        if (_busy) return;
-        StartCoroutine(FinishRepairRoutine());
-    }
+        yield return new UnityEngine.WaitForSeconds(3f);
+        _animator.SetTrigger(HashExitRoom);
 
-    IEnumerator RepairRoutine()
-    {
-        _busy = true;
-        yield return WalkTo(tvPosition);
-        _animator.SetTrigger(HashFix);
-        yield return new WaitForSeconds(repairDuration);
-        _animator.SetTrigger(HashIdle);
-        yield return WalkTo(idlePosition);
-        _busy = false;
-    }
+        if (doorExitPoint == null) yield break;
 
-    IEnumerator FinishRepairRoutine()
-    {
-        _busy = true;
-        yield return WalkTo(tvPosition);
-        _animator.SetTrigger(HashFix);
-        yield return new WaitForSeconds(repairDuration);
-        _animator.SetTrigger(HashIdle);
-        GameManager.Instance?.OnNPCFinishedRepair();
-        _busy = false;
-    }
-
-    IEnumerator WalkTo(Transform target)
-    {
-        if (target == null) yield break;
-        _animator.SetTrigger(HashWalk);
-        while (Vector3.Distance(transform.position, target.position) > 0.15f)
+        while (Vector3.Distance(transform.position, doorExitPoint.position) > 0.2f)
         {
-            transform.position = Vector3.MoveTowards(
-                transform.position, target.position, walkSpeed * Time.deltaTime);
-            transform.LookAt(new Vector3(target.position.x, transform.position.y, target.position.z));
+            Vector3 target = new Vector3(doorExitPoint.position.x, transform.position.y, doorExitPoint.position.z);
+            transform.position = Vector3.MoveTowards(transform.position, target, walkSpeed * Time.deltaTime);
+            transform.LookAt(target);
             yield return null;
         }
-        transform.position = target.position;
-        _animator.SetTrigger(HashIdle);
+
+        gameObject.SetActive(false);
     }
 }

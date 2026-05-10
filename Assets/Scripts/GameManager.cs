@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public Animator doorAnimator;
     public Animator safeAnimator;
     public TVController tvController;
+    public NPCController npcController;
 
     void Awake()
     {
@@ -18,6 +19,7 @@ public class GameManager : MonoBehaviour
     public void OnTVTurnedOff()
     {
         doorAnimator?.SetTrigger("Open");
+        npcController?.ExitRoom();
     }
 
     // Вызывается когда NPC закончил ремонт
@@ -33,8 +35,12 @@ public class GameManager : MonoBehaviour
     }
 
     // Тест-хелперы (убрать перед финальным билдом)
-    [ContextMenu("TEST: Open Door")]
-    void TestOpenDoor() => doorAnimator?.SetTrigger("Open");
+    [ContextMenu("TEST: Open Door + NPC Exit")]
+    void TestOpenDoor()
+    {
+        doorAnimator?.SetTrigger("Open");
+        npcController?.ExitRoom();
+    }
 
     [ContextMenu("TEST: Open Safe")]
     void TestOpenSafe() => safeAnimator?.SetTrigger("Open");
