@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 
-public class TVController : MonoBehaviour
+public class TVController : MonoBehaviour, IInteractable
 {
     [Header("Screen material slot (index in MeshRenderer)")]
     public int screenMaterialIndex = 2;
@@ -36,6 +36,17 @@ public class TVController : MonoBehaviour
     {
         SetState(TVState.Noise);
     }
+
+    // --- IInteractable ---
+    public void Interact(ItemData usedItem)
+    {
+        if (State == TVState.Noise)
+            GameManager.Instance?.OnTVTurnedOff();
+        // включение уже происходит через GameManager.OnNPCFinishedRepair → ShowCode
+    }
+
+    public string GetHintText(ItemData usedItem) =>
+        State == TVState.Noise ? "[E] Включить телевизор" : "[E] Выключить телевизор";
 
     void SetupOverlay()
     {

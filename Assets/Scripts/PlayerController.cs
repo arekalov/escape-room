@@ -44,13 +44,13 @@ public class PlayerController : MonoBehaviour
     void TryInteract()
     {
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, interactRange))
-            hit.collider.GetComponentInParent<IInteractable>()?.Interact();
+            hit.collider.GetComponentInParent<IInteractable>()?.Interact(null);
     }
 
     void OnGUI()
     {
         if (!Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, interactRange)) return;
-        var hint = hit.collider.GetComponentInParent<IInteractable>()?.GetHintText();
+        var hint = hit.collider.GetComponentInParent<IInteractable>()?.GetHintText(null);
         if (string.IsNullOrEmpty(hint)) return;
 
         var style = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter };

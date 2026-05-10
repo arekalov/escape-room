@@ -1,5 +1,5 @@
 public interface IInteractable
 {
-    void Interact();
-    string GetHintText();
+    void Interact(ItemData usedItem);
+    string GetHintText(ItemData usedItem);
 }
