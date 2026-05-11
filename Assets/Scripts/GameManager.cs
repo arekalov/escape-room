@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
         SetStage(QuestStage.NPCRepairing1);
         npcController?.StartApproachAndFix1();
         radio?.PlayLine(RadioLine.Intro);
+        AudioManager.StartPhoneMusic(3f);
     }
 
     // --- NPC закончил первую починку ---
@@ -76,6 +77,8 @@ public class GameManager : MonoBehaviour
         doorAnimator?.SetTrigger("Open");
         npcController?.ExitRoom();
         radio?.PlayLine(RadioLine.Win);
+        AudioManager.PlayGoodJob();
+        AudioManager.PlayMainDoor();
     }
 
     // --- код отображаемый на TV и принимаемый замком ---

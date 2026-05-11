@@ -38,6 +38,7 @@ public class WakeUpCutscene : MonoBehaviour
 
     IEnumerator Play()
     {
+        AudioManager.PlayStandUp();
         playerController.enabled = false;
         SetAlpha(1f);
 

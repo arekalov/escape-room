@@ -51,6 +51,7 @@ public class MainMenuController : MonoBehaviour
     {
         _selectedIndex = (_selectedIndex + dir + _buttons.Count) % _buttons.Count;
         SelectCurrent();
+        AudioManager.PlayMenuFocus();
     }
 
     void ShowMain()

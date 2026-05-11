@@ -21,6 +21,7 @@ public class BottleBreakable : MonoBehaviour, IInteractable
 
         _broken = true;
         InventoryManager.Instance?.RemoveItem(mugItem);
+        AudioManager.PlayBottle();
 
         if (breakEffectPrefab != null)
             Instantiate(breakEffectPrefab, transform.position, Quaternion.identity);

@@ -21,6 +21,7 @@ public class BookBurnable : MonoBehaviour, IInteractable
 
         _burned = true;
         InventoryManager.Instance?.RemoveItem(lighterItem);
+        AudioManager.PlayFlame();
 
         if (keyObject != null)
         {

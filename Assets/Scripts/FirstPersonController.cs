@@ -75,6 +75,7 @@ public class FirstPersonController : MonoBehaviour
         move.y = _yVelocity;
 
         _cc.Move(move * Time.deltaTime);
+        AudioManager.SetFootsteps(input.magnitude > 0.1f && _cc.isGrounded);
     }
 
     void OnDestroy()

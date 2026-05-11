@@ -23,6 +23,7 @@ public class SafeInteractable : MonoBehaviour, IInteractable
         _opened = true;
         InventoryManager.Instance?.RemoveItem(keyItem);
 
+        AudioManager.PlaySafeDoor();
         if (safeAnimator != null) safeAnimator.SetTrigger(openTrigger);
         if (screwdriverObject != null) screwdriverObject.SetActive(true);
     }

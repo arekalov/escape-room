@@ -64,7 +64,10 @@ public class PlayerInteraction : MonoBehaviour
 
         // E — base interaction (pick up, activate)
         if (Keyboard.current.eKey.wasPressedThisFrame && _target != null)
+        {
             _target.Interact(null);
+            AudioManager.PlayTake();
+        }
 
         // F — use selected item on target
         if (Keyboard.current.fKey.wasPressedThisFrame && _target != null && mgr?.GetSelected() != null)
@@ -77,6 +80,7 @@ public class PlayerInteraction : MonoBehaviour
             var dropPos  = origin.position + origin.forward * 0.6f;
             var throwVel = origin.forward * 1.8f + Vector3.up * 0.4f;
             mgr.DropItem(mgr.SelectedSlot, dropPos, throwVel);
+            AudioManager.PlayThrow();
         }
     }
 
