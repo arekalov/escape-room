@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 // Сейф: открывается ключом, внутри отвёртка
@@ -22,10 +23,16 @@ public class SafeInteractable : MonoBehaviour, IInteractable
 
         _opened = true;
         InventoryManager.Instance?.RemoveItem(keyItem);
-
-        AudioManager.PlaySafeDoor();
-        if (safeAnimator != null) safeAnimator.SetTrigger(openTrigger);
         if (screwdriverObject != null) screwdriverObject.SetActive(true);
+        if (safeAnimator != null) safeAnimator.SetTrigger(openTrigger);
+
+        StartCoroutine(PlaySoundDelayed(2f));
+    }
+
+    IEnumerator PlaySoundDelayed(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        AudioManager.PlaySafeDoor();
     }
 
     public string GetHintText(ItemData usedItem)

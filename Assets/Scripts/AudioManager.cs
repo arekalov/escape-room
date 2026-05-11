@@ -17,6 +17,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip flameClip;
     public AudioClip mainDoorClip;
     public AudioClip menuThickClip;
+    public AudioClip ohThanksClip;
     public AudioClip safeDoorClip;
     public AudioClip takeThinClip;
     public AudioClip throwClip;
@@ -42,6 +43,7 @@ public class AudioManager : MonoBehaviour
         _radioSrc = MakeSource(loop: false, vol: MusicVolume);
         _sfxSrc   = MakeSource(loop: false, vol: SFXVolume);
         _stepsSrc = MakeSource(loop: true,  vol: SFXVolume * 0.35f);
+        _stepsSrc.pitch = 1.5f;
 
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -91,12 +93,13 @@ public class AudioManager : MonoBehaviour
         Instance._sfxSrc.PlayOneShot(clip);
     }
 
-    public static void PlayBottle()   => PlayClip(Instance?.bottleClip);
-    public static void PlayFlame()    => PlayClip(Instance?.flameClip);
-    public static void PlayMainDoor() => PlayClip(Instance?.mainDoorClip);
-    public static void PlaySafeDoor() => PlayClip(Instance?.safeDoorClip);
-    public static void PlayTake()     => PlayClip(Instance?.takeThinClip);
-    public static void PlayThrow()    => PlayClip(Instance?.throwClip);
+    public static void PlayBottle()    => PlayClip(Instance?.bottleClip);
+    public static void PlayFlame()     => PlayClip(Instance?.flameClip);
+    public static void PlayMainDoor()  => PlayClip(Instance?.mainDoorClip);
+    public static void PlayOhThanks()  => PlayClip(Instance?.ohThanksClip);
+    public static void PlaySafeDoor()  => PlayClip(Instance?.safeDoorClip);
+    public static void PlayTake()      => PlayClip(Instance?.takeThinClip);
+    public static void PlayThrow()     => PlayClip(Instance?.throwClip);
 
     public static void PlayMenuFocus()
     {

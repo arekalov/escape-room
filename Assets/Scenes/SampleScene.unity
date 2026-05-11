@@ -7227,6 +7227,7 @@ MonoBehaviour:
   flameClip: {fileID: 8300000, guid: 6e811c5a6b01144b0b938119b5265110, type: 3}
   mainDoorClip: {fileID: 8300000, guid: 986cd264a6ce6493594a65b61fb9965b, type: 3}
   menuThickClip: {fileID: 8300000, guid: e256de7c76d604ad6b56e37202bc2be6, type: 3}
+  ohThanksClip: {fileID: 8300000, guid: a4c5410573d0b44418fddb971c16814b, type: 3}
   safeDoorClip: {fileID: 8300000, guid: 04d86b6ebe44b4ca5b748cd9d25654e1, type: 3}
   takeThinClip: {fileID: 8300000, guid: b523f437cbae74be4bac5d089f471ad8, type: 3}
   throwClip: {fileID: 8300000, guid: 71cd2c4195ba9406a9bd8009cc782386, type: 3}
@@ -9790,8 +9791,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0441\u0438\u043C\u0443\u043B\u044F\u0442\u043E\u0440 \u0432\u044B\u0436\u0438\u0432\u0430\u043D\u0438\u044F
-    \xB7 1937"
+  m_text: "\u0412\u044B\u0431\u0435\u0440\u0438\u0441\u044C \u0438\u0437 \u043A\u043E\u043C\u0430\u043D\u0442\u044B\xB7
+    1937 \u0433\u043E\u0434"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

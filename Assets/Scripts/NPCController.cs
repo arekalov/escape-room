@@ -47,6 +47,7 @@ public class NPCController : MonoBehaviour, IInteractable
         if (usedItem == null || usedItem != screwdriverItem) return;
 
         InventoryManager.Instance?.RemoveItem(screwdriverItem);
+        AudioManager.PlayOhThanks();
         PlayAnim(triggerIdle);
         GameManager.Instance?.OnScrewdriverGiven();
     }
@@ -128,6 +129,7 @@ public class NPCController : MonoBehaviour, IInteractable
         if (sd == null) return;
 
         collision.collider.gameObject.SetActive(false);
+        AudioManager.PlayOhThanks();
         PlayAnim(triggerIdle);
         GameManager.Instance?.OnScrewdriverGiven();
     }

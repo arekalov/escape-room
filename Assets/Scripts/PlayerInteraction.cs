@@ -71,7 +71,10 @@ public class PlayerInteraction : MonoBehaviour
 
         // F — use selected item on target
         if (Keyboard.current.fKey.wasPressedThisFrame && _target != null && mgr?.GetSelected() != null)
+        {
+            AudioManager.PlayThrow();
             _target.Interact(mgr.GetSelected());
+        }
 
         // Q — drop selected item
         if (Keyboard.current.qKey.wasPressedThisFrame && mgr != null && mgr.SelectedSlot >= 0)

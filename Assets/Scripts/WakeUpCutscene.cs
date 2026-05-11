@@ -38,7 +38,6 @@ public class WakeUpCutscene : MonoBehaviour
 
     IEnumerator Play()
     {
-        AudioManager.PlayStandUp();
         playerController.enabled = false;
         SetAlpha(1f);
 
@@ -46,6 +45,7 @@ public class WakeUpCutscene : MonoBehaviour
         cameraRoot.localEulerAngles = new Vector3(lyingPitch, 0f, 0f);
 
         yield return new WaitForSeconds(initialDarkness);
+        AudioManager.PlayStandUp();
 
         // Моргание — как при открытии глаз
         for (int i = 0; i < blinkCount; i++)
