@@ -33,7 +33,7 @@ public class VRPlayerInteraction : MonoBehaviour
     InputAction _triggerAction;
     InputAction _gripAction;
     InputAction _secondaryAction;
-    InputAction _leftStickAction;
+    InputAction _inventoryAction; // кнопка A правого контроллера
 
     void Awake()
     {
@@ -46,9 +46,13 @@ public class VRPlayerInteraction : MonoBehaviour
         {
             _triggerAction   = inputActions["XRI Right Interaction/Activate"];
             _gripAction      = inputActions["XRI Right Interaction/Select"];
-            _secondaryAction = inputActions["XRI Right Locomotion/Teleport Mode Cancel"];
-            _leftStickAction = inputActions.FindAction("XRI Left Locomotion/Move", true);
+            _inventoryAction = inputActions.FindAction("XRI Right Locomotion/Jump", true);
         }
+        // B button (SecondaryButton) не в стандартных action maps — создаём напрямую
+        _secondaryAction = new UnityEngine.InputSystem.InputAction(
+            "BButton",
+            UnityEngine.InputSystem.InputActionType.Button,
+            "<XRController>{RightHand}/{SecondaryButton}");
     }
 
     void OnEnable()
@@ -56,7 +60,7 @@ public class VRPlayerInteraction : MonoBehaviour
         _triggerAction?.Enable();
         _gripAction?.Enable();
         _secondaryAction?.Enable();
-        _leftStickAction?.Enable();
+        _inventoryAction?.Enable();
     }
 
     void OnDisable()
@@ -64,7 +68,7 @@ public class VRPlayerInteraction : MonoBehaviour
         _triggerAction?.Disable();
         _gripAction?.Disable();
         _secondaryAction?.Disable();
-        _leftStickAction?.Disable();
+        _inventoryAction?.Disable();
     }
 
     void Update()
@@ -141,30 +145,19 @@ public class VRPlayerInteraction : MonoBehaviour
         }
     }
 
-    float _stickCooldown;
-
     void HandleInventoryInput()
     {
-        _stickCooldown -= Time.deltaTime;
-        if (_leftStickAction == null || _stickCooldown > 0f) return;
+        if (_inventoryAction == null || !_inventoryAction.WasPressedThisFrame()) return;
 
-        var v = _leftStickAction.ReadValue<Vector2>();
-        if (Mathf.Abs(v.x) > 0.5f)
-        {
-            var mgr = InventoryManager.Instance;
-            if (mgr == null) return;
+        var mgr = InventoryManager.Instance;
+        if (mgr == null) return;
 
-            int count = mgr.GetItems().Count;
-            if (count == 0) return;
+        int count = mgr.GetItems().Count;
+        if (count == 0) { mgr.SelectSlot(-1); return; }
 
-            int dir  = v.x > 0 ? 1 : -1;
-            int next = mgr.SelectedSlot < 0
-                ? (dir > 0 ? 0 : count - 1)
-                : (mgr.SelectedSlot + dir + count) % count;
-
-            mgr.SelectSlot(mgr.SelectedSlot == next ? -1 : next);
-            _stickCooldown = 0.35f;
-        }
+        // Циклично следующий слот; повторное нажатие на последний → снять выбор
+        int next = (mgr.SelectedSlot + 1) % count;
+        mgr.SelectSlot(next == 0 && mgr.SelectedSlot == count - 1 ? -1 : next);
     }
 
     void HandleInput()
