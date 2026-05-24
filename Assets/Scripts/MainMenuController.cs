@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
@@ -34,24 +33,6 @@ public class MainMenuController : MonoBehaviour
         if (_sfxSlider)   { _sfxSlider.value   = AudioManager.SFXVolume;   _sfxSlider.onValueChanged.AddListener(AudioManager.SetSFX); }
 
         ShowMain();
-    }
-
-    void Update()
-    {
-        var kb = Keyboard.current;
-        if (kb == null || _buttons.Count == 0) return;
-
-        if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)
-            Move(+1);
-        else if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)
-            Move(-1);
-    }
-
-    void Move(int dir)
-    {
-        _selectedIndex = (_selectedIndex + dir + _buttons.Count) % _buttons.Count;
-        SelectCurrent();
-        AudioManager.PlayMenuFocus();
     }
 
     void ShowMain()

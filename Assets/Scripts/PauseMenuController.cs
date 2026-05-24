@@ -47,23 +47,7 @@ public class PauseMenuController : MonoBehaviour
             if (gm != null && (gm.Stage == QuestStage.Cutscene || gm.Stage == QuestStage.Victory)) return;
             if (CodeInputPanel.Instance != null && CodeInputPanel.Instance.gameObject.activeSelf) return;
             if (_paused) Resume(); else Pause();
-            return;
         }
-
-        if (!_paused || _buttons.Count == 0) return;
-
-        if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame)
-            Move(+1);
-        else if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame)
-            Move(-1);
-
-    }
-
-    void Move(int dir)
-    {
-        _selectedIndex = (_selectedIndex + dir + _buttons.Count) % _buttons.Count;
-        SelectCurrent();
-        AudioManager.PlayMenuFocus();
     }
 
     public void Pause()
