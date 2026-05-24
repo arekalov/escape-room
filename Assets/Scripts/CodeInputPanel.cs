@@ -46,10 +46,6 @@ public class CodeInputPanel : MonoBehaviour
 
         RefreshDisplay();
         if (errorText) errorText.text = "";
-
-        SetPlayerControlsEnabled(false);
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 
     public void Close()
@@ -57,10 +53,27 @@ public class CodeInputPanel : MonoBehaviour
         if (!_open) return;
         _open = false;
         gameObject.SetActive(false);
+    }
 
-        SetPlayerControlsEnabled(true);
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+    // Вызываются кнопками numpad
+    public void PressDigit(string digit)
+    {
+        if (!_open || _entered.Length >= 8) return;
+        _entered += digit;
+        RefreshDisplay();
+    }
+
+    public void PressBackspace()
+    {
+        if (!_open || _entered.Length == 0) return;
+        _entered = _entered[..^1];
+        RefreshDisplay();
+    }
+
+    public void PressSubmit()
+    {
+        if (!_open) return;
+        Submit();
     }
 
     void Update()
@@ -126,11 +139,8 @@ public class CodeInputPanel : MonoBehaviour
 
     void SetPlayerControlsEnabled(bool on)
     {
-        var fpc = FindFirstObjectByType<FirstPersonController>();
-        if (fpc) fpc.enabled = on;
-
-        var pi = FindFirstObjectByType<PlayerInteraction>();
-        if (pi) pi.enabled = on;
+        var vpi = FindFirstObjectByType<VRPlayerInteraction>();
+        if (vpi) vpi.enabled = on;
 
         var inv = FindFirstObjectByType<InventoryUI>();
         if (inv) inv.enabled = on;
