@@ -1,8 +1,6 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(XRRayInteractor))]
 public class VRPlayerInteraction : MonoBehaviour
 {
     [Header("References")]
@@ -26,7 +24,6 @@ public class VRPlayerInteraction : MonoBehaviour
     [Header("Animation")]
     public float fadeSpeed = 10f;
 
-    XRRayInteractor _rayInteractor;
     IInteractable   _target;
     bool            _targetNeedsItem; // true = нужен предмет, false = просто подобрать
 
@@ -37,7 +34,6 @@ public class VRPlayerInteraction : MonoBehaviour
 
     void Awake()
     {
-        _rayInteractor = GetComponent<XRRayInteractor>();
         SetAlpha(hintGroup,    0f);
         SetAlpha(dropHintGroup, 0f);
         SetAlpha(useHintGroup,  0f);
