@@ -38,11 +38,14 @@ public class WakeUpCutscene : MonoBehaviour
 
     IEnumerator Play()
     {
-        playerController.enabled = false;
+        if (playerController != null) playerController.enabled = false;
         SetAlpha(1f);
 
-        cameraRoot.localPosition    = new Vector3(0f, lyingCameraY, 0f);
-        cameraRoot.localEulerAngles = new Vector3(lyingPitch, 0f, 0f);
+        if (cameraRoot != null)
+        {
+            cameraRoot.localPosition    = new Vector3(0f, lyingCameraY, 0f);
+            cameraRoot.localEulerAngles = new Vector3(lyingPitch, 0f, 0f);
+        }
 
         yield return new WaitForSeconds(initialDarkness);
         AudioManager.PlayStandUp();
@@ -56,13 +59,17 @@ public class WakeUpCutscene : MonoBehaviour
 
         // Открытие глаз + подъём одновременно
         StartCoroutine(Fade(1f, 0f, finalOpenDuration));
-        yield return StandUp(standUpDuration);
+        if (cameraRoot != null) yield return StandUp(standUpDuration);
+        else yield return new WaitForSeconds(finalOpenDuration);
 
         yield return new WaitForSeconds(0.4f);
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible   = false;
-        playerController.enabled = true;
+        if (playerController != null)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible   = false;
+            playerController.enabled = true;
+        }
 
         GameManager.Instance?.OnCutsceneDone();
 

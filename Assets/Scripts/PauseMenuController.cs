@@ -79,6 +79,8 @@ public class PauseMenuController : MonoBehaviour
         if (fpc) fpc.enabled = false;
         var pi = FindAnyObjectByType<PlayerInteraction>();
         if (pi) pi.enabled = false;
+        var vrpi = FindAnyObjectByType<VRPlayerInteraction>();
+        if (vrpi) vrpi.enabled = false;
         RebuildButtons(_pausePanel);
     }
 
@@ -95,6 +97,8 @@ public class PauseMenuController : MonoBehaviour
         if (fpc) fpc.enabled = true;
         var pi = FindAnyObjectByType<PlayerInteraction>(FindObjectsInactive.Include);
         if (pi) pi.enabled = true;
+        var vrpi = FindAnyObjectByType<VRPlayerInteraction>(FindObjectsInactive.Include);
+        if (vrpi) vrpi.enabled = true;
         _buttons.Clear();
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
