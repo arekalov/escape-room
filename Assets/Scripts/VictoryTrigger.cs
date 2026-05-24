@@ -27,16 +27,21 @@ public class VictoryTrigger : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (_triggered) return;
-        if (!other.CompareTag("Player") && other.GetComponentInParent<FirstPersonController>() == null) return;
+        if (!IsPlayer(other)) return;
         Fire();
     }
 
     void OnTriggerStay(Collider other)
     {
         if (_triggered) return;
-        if (!other.CompareTag("Player") && other.GetComponentInParent<FirstPersonController>() == null) return;
+        if (!IsPlayer(other)) return;
         Fire();
     }
+
+    bool IsPlayer(Collider other) =>
+        other.CompareTag("Player") ||
+        other.GetComponentInParent<VRPlayerInteraction>() != null ||
+        other.GetComponentInParent<CharacterController>() != null;
 
     void Fire()
     {
@@ -47,8 +52,8 @@ public class VictoryTrigger : MonoBehaviour
 
     IEnumerator ShowVictory()
     {
-        var fpc = FindFirstObjectByType<FirstPersonController>();
-        if (fpc != null) fpc.enabled = false;
+        var vrpi = FindFirstObjectByType<VRPlayerInteraction>();
+        if (vrpi != null) vrpi.enabled = false;
 
         if (victoryPanel != null)
         {
