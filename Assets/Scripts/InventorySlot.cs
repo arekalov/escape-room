@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlot : MonoBehaviour
+public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public Image iconImage;
     public Image highlight;
+
+    public static int HoveredSlot { get; private set; } = -1;
 
     int _index;
 
@@ -20,6 +23,20 @@ public class InventorySlot : MonoBehaviour
             mgr.SelectSlot(mgr.SelectedSlot == _index ? -1 : _index);
         });
     }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        var items = InventoryManager.Instance?.GetItems();
+        if (items != null && _index < items.Count)
+            HoveredSlot = _index;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (HoveredSlot == _index) HoveredSlot = -1;
+    }
+
+    void OnDisable() { if (HoveredSlot == _index) HoveredSlot = -1; }
 
     public void Refresh(ItemData item, bool selected)
     {
