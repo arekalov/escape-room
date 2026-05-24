@@ -16,7 +16,17 @@ public class PauseMenuController : MonoBehaviour
     readonly List<Button> _buttons = new List<Button>();
     int _selectedIndex;
 
-    void Awake() => Instance = this;
+    InputAction _vrMenuAction;
+
+    void Awake()
+    {
+        Instance = this;
+        _vrMenuAction = new InputAction("VRMenu", InputActionType.Button,
+            "<XRController>{RightHand}/{Primary2DAxisClick}");
+        _vrMenuAction.Enable();
+    }
+
+    void OnDestroy() => _vrMenuAction?.Disable();
 
     void Start()
     {
@@ -38,16 +48,21 @@ public class PauseMenuController : MonoBehaviour
 
     void Update()
     {
-        var kb = Keyboard.current;
-        if (kb == null) return;
+        bool toggleRequested = false;
 
-        if (kb.escapeKey.wasPressedThisFrame)
-        {
-            var gm = GameManager.Instance;
-            if (gm != null && (gm.Stage == QuestStage.Cutscene || gm.Stage == QuestStage.Victory)) return;
-            if (CodeInputPanel.Instance != null && CodeInputPanel.Instance.gameObject.activeSelf) return;
-            if (_paused) Resume(); else Pause();
-        }
+        var kb = Keyboard.current;
+        if (kb != null && kb.escapeKey.wasPressedThisFrame)
+            toggleRequested = true;
+
+        if (_vrMenuAction != null && _vrMenuAction.WasPressedThisFrame())
+            toggleRequested = true;
+
+        if (!toggleRequested) return;
+
+        var gm = GameManager.Instance;
+        if (gm != null && (gm.Stage == QuestStage.Cutscene || gm.Stage == QuestStage.Victory)) return;
+        if (CodeInputPanel.Instance != null && CodeInputPanel.Instance.gameObject.activeSelf) return;
+        if (_paused) Resume(); else Pause();
     }
 
     public void Pause()
