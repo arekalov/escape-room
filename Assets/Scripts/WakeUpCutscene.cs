@@ -37,6 +37,7 @@ public class WakeUpCutscene : MonoBehaviour
     }
 
     bool _isVR;
+    bool _playing;
 
     void Start()
     {
@@ -44,11 +45,24 @@ public class WakeUpCutscene : MonoBehaviour
 
         if (_isVR)
         {
-            // VR fallback — use Camera Offset as cameraRoot for Y-only animation
-            var xrOrigin = FindObjectOfType<Unity.XR.CoreUtils.XROrigin>();
+            var xrOrigin = FindObjectOfType<XROrigin>();
             if (xrOrigin != null && xrOrigin.CameraFloorOffsetObject != null)
                 cameraRoot = xrOrigin.CameraFloorOffsetObject.transform;
         }
+
+        SetAlpha(0f);
+
+        // Ждём Main Menu; если меню нет — сразу кат-сцена (отладка / старая сцена).
+        var menu = FindAnyObjectByType<MainMenuController>(FindObjectsInactive.Include);
+        if (menu == null || !menu.isActiveAndEnabled)
+            Begin();
+    }
+
+    /// <summary>Вызывается из MainMenuController после нажатия Start.</summary>
+    public void Begin()
+    {
+        if (_playing) return;
+        _playing = true;
         StartCoroutine(Play());
     }
 

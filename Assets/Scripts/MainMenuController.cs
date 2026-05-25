@@ -68,6 +68,10 @@ public class MainMenuController : MonoBehaviour
     void StartGame()
     {
         Time.timeScale = 1f;
+
+        var cutscene = FindAnyObjectByType<WakeUpCutscene>(FindObjectsInactive.Include);
+        cutscene?.Begin();
+
         gameObject.SetActive(false);
     }
 
