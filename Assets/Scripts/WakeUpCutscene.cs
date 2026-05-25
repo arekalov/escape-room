@@ -14,6 +14,11 @@ public class WakeUpCutscene : MonoBehaviour
     public float lyingCameraY = 0.25f;
     public float lyingPitch   = 22f;
 
+    [Header("VR spawn (inside room, near sofa)")]
+    public Transform vrSpawnPoint;
+    public Vector3     vrSpawnPosition = new Vector3(-2.25f, 0f, 1.5f);
+    public float       vrSpawnYaw;
+
     [Header("Timing (seconds)")]
     public float initialDarkness   = 1.0f;
     public float blinkOpenTime     = 0.12f;
@@ -48,6 +53,7 @@ public class WakeUpCutscene : MonoBehaviour
             var xrOrigin = FindObjectOfType<XROrigin>();
             if (xrOrigin != null && xrOrigin.CameraFloorOffsetObject != null)
                 cameraRoot = xrOrigin.CameraFloorOffsetObject.transform;
+            AlignVRPlayer();
         }
 
         SetAlpha(0f);
@@ -63,7 +69,25 @@ public class WakeUpCutscene : MonoBehaviour
     {
         if (_playing) return;
         _playing = true;
+        if (_isVR) AlignVRPlayer();
         StartCoroutine(Play());
+    }
+
+    void AlignVRPlayer()
+    {
+        var origin = FindObjectOfType<XROrigin>();
+        if (origin == null) return;
+
+        if (vrSpawnPoint != null)
+        {
+            origin.transform.SetPositionAndRotation(
+                vrSpawnPoint.position,
+                vrSpawnPoint.rotation);
+            return;
+        }
+
+        origin.transform.position = vrSpawnPosition;
+        origin.transform.rotation = Quaternion.Euler(0f, vrSpawnYaw, 0f);
     }
 
     IEnumerator Play()
